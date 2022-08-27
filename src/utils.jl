@@ -106,3 +106,60 @@ function get_reaction_from_rhea(rid::Int64; should_cache = true)
 
     return rr
 end
+
+"""
+$(TYPEDSIGNATURES)
+
+Get reaction data corresponding to the Rhea id `rid`. Returns a dictionary
+mapping URIs to values. This function is cached automatically by default, use
+`should_cache` to change this behavior.
+"""
+function get_metabolite_from_chebi(cid::Int64; should_cache = true)
+    _is_cached("metabolite_from_chebi", cid) && return _get_cache("metabolite_from_chebi", cid)
+
+    met_vec = _parse_request(_from_chebi_metabolite_body(cid))
+    isnothing(met_vec) && return nothing
+   
+    mm = MetaNetXMetabolite()
+    db = Dict{String, Vector{String}}()
+    for _met in met_vec
+        met = last(split(_met["met"]["value"], "/"))
+        side = last(split(_met["side"]["value"], "/"))
+        part = last(split(_met["part"]["value"], "/"))
+
+        if mm.id == ""
+            mm.id = met
+        elseif mm.id != met
+            throw(error("Multiple metabolite IDs found."))
+        end
+        
+        if side == "chemXref"
+            if contains(_met["part"]["value"], "identifiers.org")
+                db_name = first(split(part, ":"))
+                db_link = last(split(part, ":"))
+                if haskey(db, db_name)
+                    db_link ∉ db[db_name] && push!(db[db_name], db_link)
+                else
+                    db[db_name] = [db_link]
+                end
+            end
+        elseif side == "rdf-schema#comment"
+            mm.name = part
+        elseif side ==  "inchi"
+            mm.inchi = part 
+        elseif side == "inchikey"
+            mm.inchikey = part 
+        elseif side == "charge"
+            mm.charge = parse(Int64, part)
+        elseif side == "formula"
+            mm.formula = part
+        elseif side == "smiles"
+            mm.smiles = part
+        end
+    end
+    mm.crossreferences = db
+
+    should_cache && _cache("metabolite_from_chebi", cid, mm)
+
+    return mm
+end

@@ -10,5 +10,5 @@ This is a simple package you can use to query reactions from MetaNetX.
 ```julia
 using MetaNetXReactions # load module
 
-# get_reaction(11364) # Rhea reaction ID 11364
+get_reaction_from_rhea(11844) # get some data from reaction
 ```
