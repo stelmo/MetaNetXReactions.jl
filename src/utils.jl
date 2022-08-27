@@ -63,9 +63,8 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Get reaction data corresponding to the Rhea id `rid`. Returns a dictionary
-mapping URIs to values. This function is cached automatically by default, use
-`should_cache` to change this behavior.
+Get reaction data corresponding to the Rhea id `rid`. This function is cached
+automatically by default, use `should_cache` to change this behavior.
 """
 function get_reaction_from_rhea(rid::Int64; should_cache = true)
     _is_cached("reaction_from_rhea", rid) && return _get_cache("reaction_from_rhea", rid)
@@ -110,9 +109,8 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Get reaction data corresponding to the Rhea id `rid`. Returns a dictionary
-mapping URIs to values. This function is cached automatically by default, use
-`should_cache` to change this behavior.
+Get metabolite data corresponding to the ChEBI id `cid`. This function is cached
+automatically by default, use `should_cache` to change this behavior.
 """
 function get_metabolite_from_chebi(cid::Int64; should_cache = true)
     _is_cached("metabolite_from_chebi", cid) && return _get_cache("metabolite_from_chebi", cid)
