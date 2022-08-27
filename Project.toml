@@ -12,7 +12,6 @@ Serialization = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 Term = "22787eb5-b846-44ae-b979-8e399b8463ab"
 
 [compat]
-[compat]
 DocStringExtensions = "0.9"
 HTTP = "1.2"
 JSON = "0.21"

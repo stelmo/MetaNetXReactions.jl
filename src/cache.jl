@@ -18,7 +18,7 @@ $(TYPEDSIGNATURES)
 Checks if the reaction has been cached.
 """
 _is_cached(database::String, id) =
-    isfile(joinpath(RheaReactions.CACHE_LOCATION, database, string(id)))
+    isfile(joinpath(CACHE_LOCATION, database, string(id)))
 
 """
 $(TYPEDSIGNATURES)
