@@ -8,7 +8,7 @@ clear_cache!() = begin
         rm(joinpath(CACHE_LOCATION, dir), recursive = true)
         dir != "version.txt" && mkdir(joinpath(CACHE_LOCATION, dir)) # add back the empty dir
     end
-    write(joinpath(CACHE_LOCATION, "version.txt"), string(Base.VERSION))    
+    write(joinpath(CACHE_LOCATION, "version.txt"), string(Base.VERSION))
     Term.tprint("{blue} Cache cleared! {/blue}")
 end
 
@@ -17,8 +17,7 @@ $(TYPEDSIGNATURES)
 
 Checks if the reaction has been cached.
 """
-_is_cached(database::String, id) =
-    isfile(joinpath(CACHE_LOCATION, database, string(id)))
+_is_cached(database::String, id) = isfile(joinpath(CACHE_LOCATION, database, string(id)))
 
 """
 $(TYPEDSIGNATURES)

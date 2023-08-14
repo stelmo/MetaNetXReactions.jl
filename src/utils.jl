@@ -71,9 +71,9 @@ function get_reaction_from_rhea(rid::Int64; should_cache = true)
 
     rxn_vec = _parse_request(_from_rhea_reaction_body(rid))
     isnothing(rxn_vec) && return nothing
-   
+
     rr = MetaNetXReaction()
-    db = Dict{String, Vector{String}}()
+    db = Dict{String,Vector{String}}()
     for rxn in rxn_vec
         reac = last(split(rxn["reac"]["value"], "/"))
         side = last(split(rxn["side"]["value"], "/"))
@@ -84,7 +84,7 @@ function get_reaction_from_rhea(rid::Int64; should_cache = true)
         elseif rr.id != reac
             throw(error("Multiple reaction IDs found."))
         end
-        
+
         if side == "reacXref"
             if contains(rxn["part"]["value"], "identifiers.org")
                 db_name = first(split(part, ":"))
@@ -96,7 +96,7 @@ function get_reaction_from_rhea(rid::Int64; should_cache = true)
                 end
             end
         elseif side == "classification"
-            part ∉ rr.classification && push!(rr.classification, part) 
+            part ∉ rr.classification && push!(rr.classification, part)
         end
     end
     rr.crossreferences = db
@@ -109,17 +109,12 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Get metabolite data corresponding to the ChEBI id `cid`. This function is cached
-automatically by default, use `should_cache` to change this behavior.
+Internal helper function to construct a metabolite from a parsed sparql query.
 """
-function get_metabolite_from_chebi(cid::Int64; should_cache = true)
-    _is_cached("metabolite_from_chebi", cid) && return _get_cache("metabolite_from_chebi", cid)
+function _metabolite(met_vec)
 
-    met_vec = _parse_request(_from_chebi_metabolite_body(cid))
-    isnothing(met_vec) && return nothing
-   
     mm = MetaNetXMetabolite()
-    db = Dict{String, Vector{String}}()
+    db = Dict{String,Vector{String}}()
     for _met in met_vec
         met = last(split(_met["met"]["value"], "/"))
         side = last(split(_met["side"]["value"], "/"))
@@ -130,7 +125,7 @@ function get_metabolite_from_chebi(cid::Int64; should_cache = true)
         elseif mm.id != met
             throw(error("Multiple metabolite IDs found."))
         end
-        
+
         if side == "chemXref"
             if contains(_met["part"]["value"], "identifiers.org")
                 db_name = first(split(part, ":"))
@@ -143,10 +138,10 @@ function get_metabolite_from_chebi(cid::Int64; should_cache = true)
             end
         elseif side == "rdf-schema#comment"
             mm.name = part
-        elseif side ==  "inchi"
-            mm.inchi = part 
+        elseif side == "inchi"
+            mm.inchi = part
         elseif side == "inchikey"
-            mm.inchikey = part 
+            mm.inchikey = part
         elseif side == "charge"
             mm.charge = parse(Int64, part)
         elseif side == "formula"
@@ -157,7 +152,61 @@ function get_metabolite_from_chebi(cid::Int64; should_cache = true)
     end
     mm.crossreferences = db
 
+    return mm
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Get metabolite data corresponding to the ChEBI id `cid`. This function is cached
+automatically by default, use `should_cache` to change this behavior.
+"""
+function get_metabolite_from_chebi(cid::Int64; should_cache = true)
+    _is_cached("metabolite_from_chebi", cid) &&
+        return _get_cache("metabolite_from_chebi", cid)
+
+    met_vec = _parse_request(_from_chebi_metabolite_body(cid))
+    isnothing(met_vec) && return nothing
+
+    mm = _metabolite(met_vec)
+
     should_cache && _cache("metabolite_from_chebi", cid, mm)
 
     return mm
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Get metabolite data corresponding to the MetaNetX id `id`. This function is cached
+automatically by default, use `should_cache` to change this behavior.
+"""
+function get_metabolite_from_metanetx(id::String; should_cache = true)
+    _is_cached("metabolite_from_metanetx", id) &&
+        return _get_cache("metabolite_from_metanetx", id)
+
+    met_vec = _parse_request(_from_metanetx_metabolite_body(id))
+    isnothing(met_vec) && return nothing
+
+    mm = _metabolite(met_vec)
+
+    should_cache && _cache("metabolite_from_metanetx", id, mm)
+
+    return mm
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+"""
+function get_chebi_to_metanetx_map(cid::Int64; should_cache = true)
+    _is_cached("chebi_metanetx", cid) && return _get_cache("chebi_metanetx", cid)
+
+    met_vec = _parse_request(_from_chebi_metantex_body(cid))
+    isnothing(met_vec) && return nothing
+    mids = unique([last(split(_met["met"]["value"], "/")) for _met in met_vec])
+
+    should_cache && _cache("chebi_metanetx", cid, mids)
+
+    return mids
 end

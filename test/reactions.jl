@@ -1,4 +1,4 @@
-@testset "From Rhea reactions" begin 
+@testset "From Rhea reactions" begin
     # PFL
     r = MetaNetXReactions.get_reaction_from_rhea(11844)
 
